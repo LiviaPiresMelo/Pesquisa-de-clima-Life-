@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisa de Clima - Life Estética</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a2e4a 0%, #2d5a7b 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: #1a2e4a;
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        .badge-anon {
+            display: inline-block;
+            background: #b8922a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .content {
+            padding: 40px 30px;
+        }
+        
+        .intro {
+            background: #FDF6E3;
+            border-left: 4px solid #b8922a;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        
+        .intro h2 {
+            color: #1a2e4a;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        
+        .intro p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            background: #EAF0F6;
+            color: #1a2e4a;
+            padding: 15px 20px;
+            border-left: 4px solid #b8922a;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .question-group {
+            margin-bottom: 30px;
+        }
+        
+        .question-text {
+            color: #1a2e4a;
+            font-weight: 500;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        
+        .likert-scale {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .likert-btn {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #555;
+        }
+        
+        .likert-btn:hover {
+            border-color: #b8922a;
+            background: #FDF6E3;
+        }
+        
+        .likert-btn.selected {
+            background: #1a2e4a;
+            color: white;
+            border-color: #1a2e4a;
+        }
+        
+        .likert-labels {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 11px;
+            color: #999;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .open-question {
+            margin-bottom: 30px;
+        }
+        
+        .open-question textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s;
+        }
+        
+        .open-question textarea:focus {
+            outline: none;
+            border-color: #b8922a;
+            box-shadow: 0 0 0 3px rgba(184, 146, 42, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 40px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-submit {
+            background: #1a2e4a;
+            color: white;
+            flex: 1;
+            max-width: 250px;
+        }
+        
+        .btn-submit:hover {
+            background: #0f1f33;
+            box-shadow: 0 4px 12px rgba(26, 46, 74, 0.3);
+        }
+        
+        .btn-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .btn-reset {
+            background: #EAF0F6;
+            color: #1a2e4a;
+            flex: 1;
+            max-width: 250px;
+        }
+        
+        .btn-reset:hover {
+            background: #dfe8f0;
+        }
+        
+        .success-message {
+            display: none;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .error-message {
+            display: none;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 6px;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #b8922a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            background: #f5f5f5;
+            padding: 20px 30px;
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            border-top: 1px solid #eee;
+        }
+        
+        .required-text {
+            color: #999;
+            font-size: 13px;
+            margin-top: 30px;
+            text-align: center;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .likert-scale {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            
+            .likert-btn {
+                padding: 10px 5px;
+                font-size: 14px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pesquisa de Clima</h1>
+            <p>Life Estética</p>
+            <div class="badge-anon">🔒 Totalmente Anônimo</div>
+        </div>
+        
+        <div class="content">
+            <div class="success-message" id="successMsg">
+                ✓ Obrigada! Seus dados foram enviados com sucesso.<br>
+                <small>Sua opinião é muito importante para nós.</small>
+            </div>
+            
+            <div class="error-message" id="errorMsg">
+                ✗ Erro ao enviar. Tente novamente.
+            </div>
+            
+            <div class="intro">
+                <h2>Bem-vinda!</h2>
+                <p>Esta pesquisa é 100% anônima e confidencial. Sua opinião sincera é muito importante para melhorarmos o ambiente de trabalho. Responda com confiança - não haverá retaliação.</p>
+            </div>
+            
+            <div class="likert-labels">
+                <div>Discordo Totalmente</div>
+                <div></div>
+                <div>Neutro</div>
+                <div></div>
+                <div>Concordo Totalmente</div>
+            </div>
+            
+            <form id="surveyForm">
+                
+                <!-- DIMENSÃO 1: GESTÃO -->
+                <div class="section">
+                    <div class="section-title">1. GESTÃO E LIDERANÇA</div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">A gestora comunica claramente os objetivos e expectativas do trabalho</div>
+                        <div class="likert-scale" data-question="q1_1"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Recebo feedback regularmente sobre meu desempenho</div>
+                        <div class="likert-scale" data-question="q1_2"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Sinto-me ouvida e respeitada pela gestora</div>
+                        <div class="likert-scale" data-question="q1_3"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">A gestora reconhece e valoriza meu trabalho</div>
+                        <div class="likert-scale" data-question="q1_4"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Tenho liberdade para tomar decisões no meu trabalho</div>
+                        <div class="likert-scale" data-question="q1_5"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">A liderança oferece suporte quando tenho dificuldades</div>
+                        <div class="likert-scale" data-question="q1_6"></div>
+                    </div>
+                </div>
+                
+                <!-- DIMENSÃO 2: TRABALHO EM EQUIPE -->
+                <div class="section">
+                    <div class="section-title">2. TRABALHO EM EQUIPE</div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Existe bom relacionamento e harmonia entre as colaboradoras</div>
+                        <div class="likert-scale" data-question="q2_1"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Minhas colegas me apoiam e colaboram comigo</div>
+                        <div class="likert-scale" data-question="q2_2"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">A comunicação entre a equipe é clara e eficaz</div>
+                        <div class="likert-scale" data-question="q2_3"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Sinto-me incluída e parte importante da equipe</div>
+                        <div class="likert-scale" data-question="q2_4"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Existem conflitos frequentes que afetam o trabalho</div>
+                        <div class="likert-scale" data-question="q2_5"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">O ambiente favorece cooperação ao invés de competição destrutiva</div>
+                        <div class="likert-scale" data-question="q2_6"></div>
+                    </div>
+                </div>
+                
+                <!-- DIMENSÃO 3: REMUNERAÇÃO -->
+                <div class="section">
+                    <div class="section-title">3. REMUNERAÇÃO E BENEFÍCIOS</div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Meu salário é compatível com minhas responsabilidades e com o mercado</div>
+                        <div class="likert-scale" data-question="q3_1"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">O sistema de comissões e pacotes é justo e transparente</div>
+                        <div class="likert-scale" data-question="q3_2"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Os benefícios oferecidos pela clínica são adequados</div>
+                        <div class="likert-scale" data-question="q3_3"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Sinto equidade salarial em relação às minhas colegas</div>
+                        <div class="likert-scale" data-question="q3_4"></div>
+                    </div>
+                </div>
+                
+                <!-- DIMENSÃO 4: METAS E PRESSÃO -->
+                <div class="section">
+                    <div class="section-title">4. METAS E PRESSÃO</div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">As metas são realistas e alcançáveis</div>
+                        <div class="likert-scale" data-question="q4_1"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">A pressão por atingir metas afeta minha saúde emocional ou física</div>
+                        <div class="likert-scale" data-question="q4_2"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Tenho autonomia para definir como alcançar minhas metas</div>
+                        <div class="likert-scale" data-question="q4_3"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">O volume de trabalho é adequado ao tempo disponível</div>
+                        <div class="likert-scale" data-question="q4_4"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Consigo manter equilíbrio entre trabalho e vida pessoal</div>
+                        <div class="likert-scale" data-question="q4_5"></div>
+                    </div>
+                </div>
+                
+                <!-- DIMENSÃO 5: INCENTIVOS -->
+                <div class="section">
+                    <div class="section-title">5. INCENTIVOS E RECONHECIMENTO</div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Sinto-me motivada e engajada com meu trabalho</div>
+                        <div class="likert-scale" data-question="q5_1"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Existe alguma forma de reconhecimento ou incentivo quando atendo bem</div>
+                        <div class="likert-scale" data-question="q5_2"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Vejo perspectivas de crescimento profissional aqui</div>
+                        <div class="likert-scale" data-question="q5_3"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Meu trabalho é valorizado e apreciado</div>
+                        <div class="likert-scale" data-question="q5_4"></div>
+                    </div>
+                </div>
+                
+                <!-- DIMENSÃO 6: COMUNICAÇÃO -->
+                <div class="section">
+                    <div class="section-title">6. COMUNICAÇÃO</div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">As informações importantes chegam a mim de forma clara e a tempo</div>
+                        <div class="likert-scale" data-question="q6_1"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Sinto-me à vontade para comunicar minhas dúvidas ou preocupações</div>
+                        <div class="likert-scale" data-question="q6_2"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">A gestora comunica as decisões da empresa de forma transparente</div>
+                        <div class="likert-scale" data-question="q6_3"></div>
+                    </div>
+                </div>
+                
+                <!-- DIMENSÃO 7: SATISFAÇÃO -->
+                <div class="section">
+                    <div class="section-title">7. SATISFAÇÃO GERAL</div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Sinto-me satisfeita trabalhando na Life Estética</div>
+                        <div class="likert-scale" data-question="q7_1"></div>
+                    </div>
+                    
+                    <div class="question-group">
+                        <div class="question-text">Recomendaria a Life Estética como local de trabalho para uma amiga</div>
+                        <div class="likert-scale" data-question="q7_2"></div>
+                    </div>
+                </div>
+                
+                <!-- QUESTÕES ABERTAS -->
+                <div class="section">
+                    <div class="section-title">SUAS OPINIÕES (Respostas em texto livre)</div>
+                    
+                    <div class="open-question">
+                        <div class="question-text">O que mais gostaria que melhorasse na Life Estética?</div>
+                        <textarea name="qa_a" placeholder="Sua resposta aqui..."></textarea>
+                    </div>
+                    
+                    <div class="open-question">
+                        <div class="question-text">Como você descreveria o relacionamento entre as colaboradoras?</div>
+                        <textarea name="qa_b" placeholder="Sua resposta aqui..."></textarea>
+                    </div>
+                    
+                    <div class="open-question">
+                        <div class="question-text">Quais são as maiores dificuldades que você enfrenta no dia a dia?</div>
+                        <textarea name="qa_c" placeholder="Sua resposta aqui..."></textarea>
+                    </div>
+                    
+                    <div class="open-question">
+                        <div class="question-text">O que mais valoriza em trabalhar na Life Estética?</div>
+                        <textarea name="qa_d" placeholder="Sua resposta aqui..."></textarea>
+                    </div>
+                    
+                    <div class="open-question">
+                        <div class="question-text">Deixe aqui qualquer comentário adicional que achar importante:</div>
+                        <textarea name="qa_e" placeholder="Sua resposta aqui..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="required-text">Todas as perguntas quantitativas precisam ser respondidas para enviar.</div>
+                
+                <div class="button-group">
+                    <button type="submit" class="btn btn-submit">Enviar Respostas</button>
+                    <button type="reset" class="btn btn-reset">Limpar Tudo</button>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Enviando suas respostas...</p>
+                </div>
+            </form>
+        </div>
+        
+        <div class="footer">
+            Pesquisa de Clima Organizacional © 2026 | Psi. Lívia Melo | CRP 11-04808
+        </div>
+    </div>
+    
+    <script>
+        // Armazenar respostas no objeto
+        const answers = {};
+        
+        // Gerar botões Likert dinamicamente
+        document.querySelectorAll('.likert-scale').forEach(scale => {
+            const question = scale.dataset.question;
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = i;
+                btn.className = 'likert-btn';
+                btn.onclick = () => selectAnswer(question, i, btn.parentElement);
+                scale.appendChild(btn);
+            }
+        });
+        
+        function selectAnswer(question, value, container) {
+            answers[question] = value;
+            container.querySelectorAll('button').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            container.querySelectorAll('button')[value - 1].classList.add('selected');
+        }
+        
+        // Enviar formulário
+        document.getElementById('surveyForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            // Verificar se todas as respostas quantitativas foram preenchidas
+            const requiredQuestions = [
+                'q1_1', 'q1_2', 'q1_3', 'q1_4', 'q1_5', 'q1_6',
+                'q2_1', 'q2_2', 'q2_3', 'q2_4', 'q2_5', 'q2_6',
+                'q3_1', 'q3_2', 'q3_3', 'q3_4',
+                'q4_1', 'q4_2', 'q4_3', 'q4_4', 'q4_5',
+                'q5_1', 'q5_2', 'q5_3', 'q5_4',
+                'q6_1', 'q6_2', 'q6_3',
+                'q7_1', 'q7_2'
+            ];
+            
+            for (let q of requiredQuestions) {
+                if (!answers[q]) {
+                    alert('Por favor, responda todas as perguntas marcadas com ⭐');
+                    return;
+                }
+            }
+            
+            // Coletar respostas abertas
+            const formData = new FormData(document.getElementById('surveyForm'));
+            const data = {
+                ...answers,
+                qa_a: formData.get('qa_a') || '',
+                qa_b: formData.get('qa_b') || '',
+                qa_c: formData.get('qa_c') || '',
+                qa_d: formData.get('qa_d') || '',
+                qa_e: formData.get('qa_e') || ''
+            };
+            
+            // Mostrar loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('successMsg').style.display = 'none';
+            document.getElementById('errorMsg').style.display = 'none';
+            
+            try {
+                // Enviar para Apps Script
+                const response = await fetch('SUBSTITUA_PELA_URL_DO_APPS_SCRIPT', {
+                    method: 'POST',
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('successMsg').style.display = 'block';
+                    document.getElementById('surveyForm').reset();
+                    Object.keys(answers).forEach(key => delete answers[key]);
+                    document.querySelectorAll('.likert-btn.selected').forEach(btn => {
+                        btn.classList.remove('selected');
+                    });
+                    
+                    setTimeout(() => {
+                        window.scrollTo(0, 0);
+                    }, 300);
+                } else {
+                    throw new Error('Erro ao enviar');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        };
+    </script>
+</body>
+</html>
