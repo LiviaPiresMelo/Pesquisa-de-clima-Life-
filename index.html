@@ -631,26 +631,27 @@
             
             try {
                 // Enviar para Apps Script
-                const response = await fetch('SUBSTITUA_PELA_URL_DO_APPS_SCRIPT', {
+                const response = await fetch('https://script.google.com/macros/s/AKfycbykw1DSqHTRw3V3B10exukQ8X1c_iqa9SpwlwuGkaFASaQ6elF-T0aiOcA9s8n2-NV07w/exec', {
                     method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify(data)
                 });
                 
-                if (response.ok) {
-                    document.getElementById('loading').style.display = 'none';
-                    document.getElementById('successMsg').style.display = 'block';
-                    document.getElementById('surveyForm').reset();
-                    Object.keys(answers).forEach(key => delete answers[key]);
-                    document.querySelectorAll('.likert-btn.selected').forEach(btn => {
-                        btn.classList.remove('selected');
-                    });
-                    
-                    setTimeout(() => {
-                        window.scrollTo(0, 0);
-                    }, 300);
-                } else {
-                    throw new Error('Erro ao enviar');
-                }
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('successMsg').style.display = 'block';
+                document.getElementById('surveyForm').reset();
+                Object.keys(answers).forEach(key => delete answers[key]);
+                document.querySelectorAll('.likert-btn.selected').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                setTimeout(() => {
+                    window.scrollTo(0, 0);
+                }, 300);
+                
             } catch (error) {
                 console.error('Erro:', error);
                 document.getElementById('loading').style.display = 'none';
